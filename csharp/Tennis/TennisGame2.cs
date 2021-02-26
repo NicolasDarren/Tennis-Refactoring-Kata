@@ -1,106 +1,50 @@
+using System;
+
 namespace Tennis
 {
     public class TennisGame2 : ITennisGame
     {
-        private int _player1Points;
-        private int _player2Points;
-
-        private string _p1Res = "";
-        private string _p2Res = "";
         public string Player1Name { get; }
         public string Player2Name { get; }
+
+        private int _player1Points;
+        private int _player2Points;
 
         public TennisGame2(string player1Name, string player2Name)
         {
             Player1Name = player1Name;
             Player2Name = player2Name;
         }
-
+        
         public string GetScore()
         {
-            var score = "";
-            if (_player1Points == _player2Points && _player1Points < 3)
-            {
-                if (_player1Points == 0)
-                    score = "Love";
-                if (_player1Points == 1)
-                    score = "Fifteen";
-                if (_player1Points == 2)
-                    score = "Thirty";
-                score += "-All";
-            }
-            if (_player1Points == _player2Points && _player1Points > 2)
-                score = "Deuce";
+            var pointGap = Math.Abs(_player1Points - _player2Points);
 
-            if (_player1Points > 0 && _player2Points == 0)
-            {
-                if (_player1Points == 1)
-                    _p1Res = "Fifteen";
-                if (_player1Points == 2)
-                    _p1Res = "Thirty";
-                if (_player1Points == 3)
-                    _p1Res = "Forty";
+            if (pointGap == 0 && _player1Points > 2)
+                return "Deuce";
 
-                _p2Res = "Love";
-                score = _p1Res + "-" + _p2Res;
-            }
-            if (_player2Points > 0 && _player1Points == 0)
+            if (_player1Points >= 4 || _player2Points >= 4)
             {
-                if (_player2Points == 1)
-                    _p2Res = "Fifteen";
-                if (_player2Points == 2)
-                    _p2Res = "Thirty";
-                if (_player2Points == 3)
-                    _p2Res = "Forty";
-
-                _p1Res = "Love";
-                score = _p1Res + "-" + _p2Res;
+                var player1HasMorePoints = _player1Points > _player2Points;
+                return pointGap >= 2 
+                    ? GetWinningScore(player1HasMorePoints) 
+                    : GetAdvantageScore(player1HasMorePoints);
             }
 
-            if (_player1Points > _player2Points && _player1Points < 4)
-            {
-                if (_player1Points == 2)
-                    _p1Res = "Thirty";
-                if (_player1Points == 3)
-                    _p1Res = "Forty";
-                if (_player2Points == 1)
-                    _p2Res = "Fifteen";
-                if (_player2Points == 2)
-                    _p2Res = "Thirty";
-                score = _p1Res + "-" + _p2Res;
-            }
-            if (_player2Points > _player1Points && _player2Points < 4)
-            {
-                if (_player2Points == 2)
-                    _p2Res = "Thirty";
-                if (_player2Points == 3)
-                    _p2Res = "Forty";
-                if (_player1Points == 1)
-                    _p1Res = "Fifteen";
-                if (_player1Points == 2)
-                    _p1Res = "Thirty";
-                score = _p1Res + "-" + _p2Res;
-            }
+            var score = GetPlayerScore(_player1Points) + "-";
+            if (_player1Points == _player2Points) return score + "All";
 
-            if (_player1Points > _player2Points && _player2Points >= 3)
-            {
-                score = "Advantage player1";
-            }
+            return score + GetPlayerScore(_player2Points);
+        }
 
-            if (_player2Points > _player1Points && _player1Points >= 3)
-            {
-                score = "Advantage player2";
-            }
+        private static string GetWinningScore(bool player1HasMorePoints)
+        {
+            return player1HasMorePoints ? "Win for player1" : "Win for player2";
+        }
 
-            if (_player1Points >= 4 && _player2Points >= 0 && (_player1Points - _player2Points) >= 2)
-            {
-                score = "Win for player1";
-            }
-            if (_player2Points >= 4 && _player1Points >= 0 && (_player2Points - _player1Points) >= 2)
-            {
-                score = "Win for player2";
-            }
-            return score;
+        private static string GetAdvantageScore(bool player1HasMorePoints)
+        {
+            return player1HasMorePoints ? "Advantage player1" : "Advantage player2";
         }
 
         public void WonPoint(string player)
@@ -108,9 +52,18 @@ namespace Tennis
             if (player == "player1")
                 _player1Points++;
             else
-               _player2Points++;
+                _player2Points++;
         }
 
+        private string GetPlayerScore(int playerPoints)
+        {
+            return playerPoints switch
+                {
+                0 => "Love",
+                1 => "Fifteen",
+                2 => "Thirty",
+                _ => "Forty",
+                };
+        }
     }
 }
-
